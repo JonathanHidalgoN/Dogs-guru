@@ -4,6 +4,8 @@ import os
 from torch.utils.data import Dataset
 from torchvision.io import read_image
 import torch
+from google_images_download import google_images_download
+from shutil import rmtree 
 
 class DogsDataset(Dataset):
     #TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
@@ -44,19 +46,38 @@ class DogsDataset(Dataset):
         species = os.listdir(self.path)
         return [specie.split('-')[-1] for specie in species]
 
-    @species.setter
-    def add_species(self, new_species : list) -> None:
+    def _populate_species(self, query:str, number_of_images : int = 100) -> list:
+        """
+        Populates the dataset with images from Google Images.
+        Args:
+            query: A string representing the query to search for.
+            number_of_images: An integer representing the number of images to download.
+        Returns:
+            A list of strings representing the full paths to the downloaded images.
+        """
+        response = google_images_download.googleimagesdownload()
+        new_path = os.path.join(self.path, query)
+        arguments = {"keywords":query, "limit":number_of_images, "print_urls":False, "output_directory":new_path}
+        response.download(arguments)
+        return [os.path.join(new_path, image) for image in os.listdir(new_path)]
+        
+
+    def add_species(self, new_species : list, images_per_specie : list = []) -> None:
         """
         Adds new classes to the dataset.
         Args:
             new_species: A list of strings representing the new classes to add.
         """
         self._species.extend(new_species)
+        if images_per_specie == []:
+            images_per_specie = [100] * len(new_species)
         #Now make new folders for the new species
         #TO DO: check duplicates
-        for new_specie in new_species:
+        for idx,new_specie in enumerate(new_species):
             try :
                 os.mkdir(os.path.join(self.path, new_specie))
+                #TO DO: maybe delete return in _populate_species, not sure if it's useful
+                _ = self._populate_species(new_specie, images_per_specie[idx])
             except FileExistsError:
                 print(f"Folder {new_specie} already exists")
 
@@ -72,12 +93,18 @@ class DogsDataset(Dataset):
         index =[]
         dirs = os.listdir(self.path)
         for idx,specie in enumerate(dirs):
-            if specie.split("-")[-1] in species_to_remove:
+            target_name = specie.split('-')[-1]
+            if target_name in species_to_remove:
                 index.append(idx)
-            else :
-                print(f"Specie {specie} not found")
+                species_to_remove.remove(target_name)
         for idx in index:
-            os.rmdir(os.path.join(self.path, dirs[idx]))
+            path_to_remove = os.path.join(self.path, dirs[idx])
+            try:
+                os.rmdir(path_to_remove)
+            except OSError:
+                rmtree(path_to_remove)
+        for remaining_specie in species_to_remove:
+            print(f"{remaining_specie} not found in dataset")
 
     def count_images(self) -> dict:
         """
@@ -121,15 +148,13 @@ class DogsDataset(Dataset):
             image = read_image(image_path)
             return image
 
+
+        
         
 
 
 if __name__ == "__main__":
     images_path = "images/Images"
     dataset = DogsDataset(path = images_path)
-    count = dataset.count_images()
-    print(count)    
-    print(dataset)
-    print(type(dataset[0]))
-    print(dataset[0].shape)
-    print(dataset[0].dtype)
+    dataset.add_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
+    dataset.remove_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
