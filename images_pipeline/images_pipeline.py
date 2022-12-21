@@ -1,4 +1,10 @@
 #This file assumes that the dataset is the following https://www.kaggle.com/datasets/jessicali9530/stanford-dogs-dataset
+#other datasets might work, if they are structured in the same way
+#images/Images
+#    n02085620-Chihuahua(Folder with images)
+#    n02085782-Japanese_spaniel(Folder with images)
+#    ...
+#Notice specie have a - before the name, and the name is in the folder.
 
 import os
 from torch.utils.data import Dataset
@@ -155,5 +161,7 @@ class DogsDataset(Dataset):
 if __name__ == "__main__":
     images_path = "images/Images"
     dataset = DogsDataset(path = images_path)
-    #dataset.add_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
-    #dataset.remove_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
+    dataset.add_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
+    print(len(dataset.species))
+    dataset.remove_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
+    print(len(dataset.species))
