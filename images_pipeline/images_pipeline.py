@@ -37,6 +37,23 @@ class DogsDataset:
         #TO DO: check duplicates
         for new_specie in new_species:
             os.mkdir(os.path.join(self.path, new_specie))
+
+    @species.deleter
+    def remove_species(self, species_to_remove : list) -> None:
+        """
+        Removes classes from the dataset.
+        Args:
+            species_to_remove: A list of strings representing the classes to remove.
+        """
+        #TO DO: check if the species to remove are in the dataset
+        #TO DO: add a confirmation message, or a safety check
+        index =[]
+        for idx,specie in enumerate(os.listdir(self.path)):
+            if specie in species_to_remove.split("-")[-1]:
+                index.append(idx)
+        for idx in index:
+            os.rmdir(os.path.join(self.path, os.listdir(self.path)[idx]))
+            
                 
 
 
