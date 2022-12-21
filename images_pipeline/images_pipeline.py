@@ -87,6 +87,16 @@ class DogsDataset:
         #len(self) calls the __len__ method
         return f"Dataset with {len(self)} classes"
 
+    def count_total_images(self) -> int:
+        """
+        Returns the number of images in the dataset.
+        Returns:
+            An integer representing the number of images in the dataset.
+        """
+        return sum(self.count_images().values())
+
+    
+
 
 if __name__ == "__main__":
     images_path = "images/Images"
@@ -94,3 +104,4 @@ if __name__ == "__main__":
     count = dataset.count_images()
     print(count)    
     print(dataset)
+    print(dataset.count_total_images())
