@@ -3,7 +3,7 @@
 import os
 
 class DogsDataset:
-
+    #TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
     """
     A class to represent the Stanford Dogs Dataset.
     Attributes:
@@ -59,16 +59,23 @@ class DogsDataset:
                 print(f"Specie {specie} not found")
         for idx in index:
             os.rmdir(os.path.join(self.path, dirs[idx]))
-            
-                
+
+    def count_images(self) -> dict:
+        """
+        Counts the number of images in each class.
+        Returns:
+            A dictionary with the classes as keys and the number of images as values.
+        """
+        sub_paths = os.listdir(self.path)
+        count = {sub_path.split('-')[-1]:len(os.listdir(os.path.join(self.path, sub_path))) for sub_path in sub_paths}
+        return count
+        
+    
 
 
 
 if __name__ == "__main__":
     images_path = "images/Images"
     dataset = DogsDataset(path = images_path)
-    print(dataset.species)
-    dataset.add_species = ["new_specie1", "new_specie2"]
-    print(dataset.species[-2:])
-    dataset.remove_species(["new_specie1", "new_specie2", "new_specie3"])
-    print(dataset.species[-2:])
+    count = dataset.count_images()
+    print(count)    
