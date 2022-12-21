@@ -70,7 +70,13 @@ class DogsDataset:
         count = {sub_path.split('-')[-1]:len(os.listdir(os.path.join(self.path, sub_path))) for sub_path in sub_paths}
         return count
         
-    
+    def __len__(self) ->int:
+        """
+        Returns the number of classes in the dataset.
+        Returns:
+            An integer representing the number of classes in the dataset.
+        """
+        return len(self.species)
 
 
 
