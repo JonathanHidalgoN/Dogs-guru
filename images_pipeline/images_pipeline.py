@@ -3,6 +3,7 @@
 import os
 from torch.utils.data import Dataset
 from torchvision.io import read_image
+import torch
 
 class DogsDataset(Dataset):
     #TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
@@ -115,7 +116,10 @@ class DogsDataset(Dataset):
         """
         if index >= len(self):
             raise IndexError("Index out of range")
-        return None    
+        else :
+            image_path = self._full_paths[index]
+            image = read_image(image_path)
+            return image
 
         
 
@@ -126,4 +130,6 @@ if __name__ == "__main__":
     count = dataset.count_images()
     print(count)    
     print(dataset)
-    print(dataset.count_total_images())
+    print(type(dataset[0]))
+    print(dataset[0].shape)
+    print(dataset[0].dtype)
