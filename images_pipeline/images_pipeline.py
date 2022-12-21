@@ -1,8 +1,10 @@
 #This file assumes that the dataset is the following https://www.kaggle.com/datasets/jessicali9530/stanford-dogs-dataset
 
 import os
+from torch.utils.data import Dataset
+from torchvision.io import read_image
 
-class DogsDataset:
+class DogsDataset(Dataset):
     #TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
     """
     A class to represent the Stanford Dogs Dataset.
@@ -14,6 +16,22 @@ class DogsDataset:
 
         self.path = path
         self._species = self.species
+        self._full_paths = self._get_full_paths(path)
+
+    @staticmethod
+    def _get_full_paths(path : str) -> list:
+        """
+        Returns a list of full paths to the images in the dataset.
+        Args:
+            path: A string representing the path to the dataset.
+        Returns:
+            A list of strings representing the full paths to the images in the dataset.
+        """
+        sub_paths = os.listdir(path)
+        full_paths = []
+        for sub_path in sub_paths:
+            full_paths.extend([os.path.join(path, sub_path, image) for image in os.listdir(os.path.join(path, sub_path))])
+        return full_paths
 
     @property
     def species(self) ->list:
@@ -76,7 +94,7 @@ class DogsDataset:
         Returns:
             An integer representing the number of classes in the dataset.
         """
-        return len(self.species)
+        return sum(self.count_images().values())
 
     def __repr__(self) -> str:
         """
@@ -87,15 +105,19 @@ class DogsDataset:
         #len(self) calls the __len__ method
         return f"Dataset with {len(self)} classes"
 
-    def count_total_images(self) -> int:
+    def __getitem__(self, index : int) -> torch.Tensor:
         """
-        Returns the number of images in the dataset.
+        Returns the class at the given index.
+        Args:
+            index: An integer representing the index of the class to return.
         Returns:
-            An integer representing the number of images in the dataset.
+            A string representing the class at the given index.
         """
-        return sum(self.count_images().values())
+        if index >= len(self):
+            raise IndexError("Index out of range")
+        return None    
 
-    
+        
 
 
 if __name__ == "__main__":
