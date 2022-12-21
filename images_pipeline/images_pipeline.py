@@ -153,7 +153,9 @@ class DogsDataset(Dataset):
             image = read_image(image_path)
             return image
 
+    
 
+    
         
         
 
