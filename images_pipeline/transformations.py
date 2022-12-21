@@ -3,6 +3,7 @@
 
 from torch import Tensor as torch_tensor
 import typing
+from torch import randint
 
 class Rescale:
 
@@ -51,6 +52,43 @@ class Rescale:
         return image.resize((new_h, new_w))
 
 
+
+class RandomCrop:
+
+    """
+    Crop randomly the image in a sample.
+
+    Args:
+        output_size (tuple or int): Desired output size. If int, square crop
+            is made.
+    """
+
+    def __init__(self, output_size : typing.Tuple[int, int]):
+        assert isinstance(output_size, (int, tuple))
+        if isinstance(output_size, int):
+            self.output_size = (output_size, output_size)
+        else:
+            self.output_size = output_size
+
+    def __call__(self, image : torch_tensor) -> torch_tensor:
+        """
+        Crop randomly the image in a sample.
+
+        Args:
+            image (Tensor): Image to be cropped.
+
+        Returns:
+            Tensor: Cropped image.
+
+        """
+        h, w = image.shape[:2]
+        new_h, new_w = self.output_size
+
+        #In the tutorial they suggest to use pytorch's random function, they use numpy's randint function
+        top = randint(0, h - new_h)
+        left = randint(0, w - new_w)
+
+        return image[top: top + new_h, left: left + new_w]
 
 
 if "__name__" == "__main__":
