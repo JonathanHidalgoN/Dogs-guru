@@ -13,7 +13,7 @@ class DogsDataset:
     def __init__(self, path : str) -> None:
 
         self.path = path
-        self._species = self.get_species
+        self._species = self.species
 
     @property
     def species(self) ->list:
@@ -36,9 +36,12 @@ class DogsDataset:
         #Now make new folders for the new species
         #TO DO: check duplicates
         for new_specie in new_species:
-            os.mkdir(os.path.join(self.path, new_specie))
+            try :
+                os.mkdir(os.path.join(self.path, new_specie))
+            except FileExistsError:
+                print(f"Folder {new_specie} already exists")
 
-    @species.deleter
+    
     def remove_species(self, species_to_remove : list) -> None:
         """
         Removes classes from the dataset.
@@ -48,11 +51,14 @@ class DogsDataset:
         #TO DO: check if the species to remove are in the dataset
         #TO DO: add a confirmation message, or a safety check
         index =[]
-        for idx,specie in enumerate(os.listdir(self.path)):
-            if specie in species_to_remove.split("-")[-1]:
+        dirs = os.listdir(self.path)
+        for idx,specie in enumerate(dirs):
+            if specie.split("-")[-1] in species_to_remove:
                 index.append(idx)
+            else :
+                print(f"Specie {specie} not found")
         for idx in index:
-            os.rmdir(os.path.join(self.path, os.listdir(self.path)[idx]))
+            os.rmdir(os.path.join(self.path, dirs[idx]))
             
                 
 
@@ -61,7 +67,8 @@ class DogsDataset:
 if __name__ == "__main__":
     images_path = "images/Images"
     dataset = DogsDataset(path = images_path)
-    print(dataset.get_species)
-    new_species = ["new_specie_1", "new_specie_2"]
-    dataset.add_species = new_species
-    print(dataset.get_species[-2:])
+    print(dataset.species)
+    dataset.add_species = ["new_specie1", "new_specie2"]
+    print(dataset.species[-2:])
+    dataset.remove_species(["new_specie1", "new_specie2", "new_specie3"])
+    print(dataset.species[-2:])
