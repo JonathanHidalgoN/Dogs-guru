@@ -57,7 +57,7 @@ class DogsDataset(Dataset):
         """
         response = google_images_download.googleimagesdownload()
         new_path = os.path.join(self.path, query)
-        arguments = {"keywords":query, "limit":number_of_images, "print_urls":False, "output_directory":new_path}
+        arguments = {"keywords":query, "limit":number_of_images, "print_urls":False, "output_directory":self.path}
         response.download(arguments)
         return [os.path.join(new_path, image) for image in os.listdir(new_path)]
         
@@ -75,7 +75,6 @@ class DogsDataset(Dataset):
         #TO DO: check duplicates
         for idx,new_specie in enumerate(new_species):
             try :
-                os.mkdir(os.path.join(self.path, new_specie))
                 #TO DO: maybe delete return in _populate_species, not sure if it's useful
                 _ = self._populate_species(new_specie, images_per_specie[idx])
             except FileExistsError:
@@ -156,5 +155,5 @@ class DogsDataset(Dataset):
 if __name__ == "__main__":
     images_path = "images/Images"
     dataset = DogsDataset(path = images_path)
-    dataset.add_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
-    dataset.remove_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
+    #dataset.add_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
+    #dataset.remove_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
