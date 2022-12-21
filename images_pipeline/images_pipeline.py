@@ -78,6 +78,14 @@ class DogsDataset:
         """
         return len(self.species)
 
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of the dataset.
+        Returns:
+            A string representing the dataset.
+        """
+        #len(self) calls the __len__ method
+        return f"Dataset with {len(self)} classes"
 
 
 if __name__ == "__main__":
@@ -85,3 +93,4 @@ if __name__ == "__main__":
     dataset = DogsDataset(path = images_path)
     count = dataset.count_images()
     print(count)    
+    print(dataset)
