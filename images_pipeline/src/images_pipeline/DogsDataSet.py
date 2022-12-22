@@ -154,22 +154,6 @@ class DogsDataSet(Dataset):
         else :
             image_path = self._full_paths[index]
             image = read_image(image_path)
-            if self.transform:
-                image = self.transform(image)
-            
-
+            if self.transform is not None:
+                image = self.transform(image)           
             return image
-
-
-
-
-        
-        
-
-
-if __name__ == "__main__":
-    images_path = "images/Images"
-    dataset = DogsDataSet(path = images_path)
-    couted_images = dataset.count_images()
-    print(sum(couted_images.values()))
-    print(len(couted_images.keys()))
