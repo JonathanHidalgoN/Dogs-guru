@@ -9,7 +9,7 @@
 import os
 from torch.utils.data import Dataset
 from torchvision.io import read_image
-import torch
+from torch import Tensor as torch_tensor
 from google_images_download import google_images_download
 from shutil import rmtree 
 
@@ -141,7 +141,7 @@ class DogsDataSet(Dataset):
         #len(self) calls the __len__ method
         return f"Dataset with {len(self)} classes"
 
-    def __getitem__(self, index : int) -> torch.Tensor:
+    def __getitem__(self, index : int) -> torch_tensor:
         """
         Returns the class at the given index.
         Args:
