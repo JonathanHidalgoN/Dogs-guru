@@ -1,3 +1,4 @@
 images
 annotations
 *.egg-info
+*.pyc
