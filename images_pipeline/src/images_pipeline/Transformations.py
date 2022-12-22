@@ -4,7 +4,7 @@
 from torch import Tensor as torch_tensor
 import typing
 from torch import randint
-from skimage import io, transform
+from skimage import transform
 
 class Rescale:
 
