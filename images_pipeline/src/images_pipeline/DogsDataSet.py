@@ -19,13 +19,16 @@ class DogsDataSet(Dataset):
     A class to represent the Stanford Dogs Dataset.
     Attributes:
         path: A string representing the path to the dataset.
+        species: A list of strings representing the classes in the dataset.
+        transform: A list of transformations to apply to the images in the dataset.
     """
 
-    def __init__(self, path : str) -> None:
+    def __init__(self, path : str, transform : object = None) -> None:
 
         self.path = path
         self._species = self.species
         self._full_paths = self._get_full_paths(path)
+        self.transform = transform
 
     @staticmethod
     def _get_full_paths(path : str) -> list:
@@ -151,9 +154,13 @@ class DogsDataSet(Dataset):
         else :
             image_path = self._full_paths[index]
             image = read_image(image_path)
+            if self.transform:
+                image = self.transform(image)
+            
+
             return image
 
-    
+
 
 
         
