@@ -1,5 +1,6 @@
 import pytest
 from images_pipeline.DogsDataSet import DogsDataSet
+from images_pipeline.Transformations import Rescale, RandomCrop
 
 class TestDogsDataSet:
 
@@ -39,7 +40,7 @@ class TestDogsDataSet:
         """
         assert len(self.dogsDataSet) == 20580
 
-    def teset_getitem(self):
+    def test_getitem(self):
         """
         Tests the __getitem__ method.
         """
@@ -47,6 +48,15 @@ class TestDogsDataSet:
         assert self.dogsDataSet[20579].shape == (500, 375, 3)
         with pytest.raises(IndexError):
             self.dogsDataSet[20580]
+        self.dogsDataSet.transform = [Rescale((256, 256)), RandomCrop((50, 50))]
+        assert self.dogsDataSet[0].shape == (50, 50, 3)
+        assert self.dogsDataSet[20579].shape == (50, 50, 3)
+        with pytest.raises(IndexError):
+            self.dogsDataSet[20580]
+        self.dogsDataSet.transform = None
+        assert self.dogsDataSet[0].shape == (500, 375, 3)
+        assert self.dogsDataSet[20579].shape == (500, 375, 3)
+    
 
     
 
