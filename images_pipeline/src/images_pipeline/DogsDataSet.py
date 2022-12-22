@@ -118,8 +118,8 @@ class DogsDataSet(Dataset):
             A dictionary with the classes as keys and the number of images as values.
         """
         sub_paths = os.listdir(self.path)
-        count = {sub_path.split('-')[-1]:len(os.listdir(os.path.join(self.path, sub_path))) for sub_path in sub_paths}
-        return count
+        return {sub_path: len(os.listdir(os.path.join(self.path, sub_path))) for sub_path in sub_paths}
+        
         
     def __len__(self) ->int:
         """
@@ -162,8 +162,7 @@ class DogsDataSet(Dataset):
 
 if __name__ == "__main__":
     images_path = "images/Images"
-    dataset = DogsDataset(path = images_path)
-    dataset.add_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
-    print(len(dataset.species))
-    dataset.remove_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
-    print(len(dataset.species))
+    dataset = DogsDataSet(path = images_path)
+    couted_images = dataset.count_images()
+    print(sum(couted_images.values()))
+    print(len(couted_images.keys()))
