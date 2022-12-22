@@ -2,21 +2,23 @@ from setuptools import setup, find_packages
 import pathlib
 
 # The directory containing this file
-HERE = pathlib.Path(__file__).parent
+here = pathlib.Path(__file__).parent.resolve()
+root_package = "images_pipeline"
+root_package_dir = "src/"
+# The text of the README file
 setup(
     name="images_pipeline",
-    version="0.0.1",
-    description="A package to process images",
-    long_description="",
-    long_description_content_type="text/markdown",
+    version="0.1.0",
+    description="A small package",
     url="https://github.com/JonathanHidalgoN",
     author="Jonathan Hidalgo",
     author_email="ja.hidalgonunez@ugto.mx",
-    license="MIT",
     classifiers=["Programming Language :: Python :: 3"],
-    python_requires=">=3.6",
-    packages=find_packages(),
+    packages=[root_package]
+    + [
+        f"{root_package}.{item}"
+        for item in find_packages(where=root_package_dir + root_package)
+    ],
+    package_dir={"": "src"},
+    python_requires=">=3.6, <4",
 )
-
-packages = find_packages()
-print(packages)

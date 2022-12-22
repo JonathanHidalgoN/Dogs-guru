@@ -13,7 +13,7 @@ import torch
 from google_images_download import google_images_download
 from shutil import rmtree 
 
-class DogsDataset(Dataset):
+class DogsDataSet(Dataset):
     #TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
     """
     A class to represent the Stanford Dogs Dataset.
