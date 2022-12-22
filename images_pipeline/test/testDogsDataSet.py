@@ -1,6 +1,7 @@
 import pytest
 from images_pipeline.DogsDataSet import DogsDataSet
 from images_pipeline.Transformations import Rescale, RandomCrop
+from torchvision import transforms
 
 class TestDogsDataSet:
 
@@ -44,18 +45,20 @@ class TestDogsDataSet:
         """
         Tests the __getitem__ method.
         """
-        assert self.dogsDataSet[0].shape == (500, 375, 3)
-        assert self.dogsDataSet[20579].shape == (500, 375, 3)
-        with pytest.raises(IndexError):
-            self.dogsDataSet[20580]
-        self.dogsDataSet.transform = [Rescale((256, 256)), RandomCrop((50, 50))]
-        assert self.dogsDataSet[0].shape == (50, 50, 3)
-        assert self.dogsDataSet[20579].shape == (50, 50, 3)
-        with pytest.raises(IndexError):
-            self.dogsDataSet[20580]
+        transformation = Rescale((256,256))
+        self.dogsDataSet.transform = transformation
+        assert self.dogsDataSet[0].shape == (3, 256, 256)
+        assert self.dogsDataSet[20579].shape == (3, 256, 256)
         self.dogsDataSet.transform = None
-        assert self.dogsDataSet[0].shape == (500, 375, 3)
-        assert self.dogsDataSet[20579].shape == (500, 375, 3)
+        assert self.dogsDataSet[0].shape == (3, 360, 290)
+        with pytest.raises(IndexError):
+            self.dogsDataSet[20580]
+        another_transformation = transforms.Compose([Rescale((256,256)), RandomCrop((224,224))])
+        self.dogsDataSet.transform = another_transformation
+        assert self.dogsDataSet[0].shape == (3, 224, 224)
+        assert self.dogsDataSet[20579].shape == (3, 224, 224)
+        self.dogsDataSet.transform = None
+
     
 
     
