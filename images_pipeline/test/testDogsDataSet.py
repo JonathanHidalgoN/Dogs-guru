@@ -39,7 +39,15 @@ class TestDogsDataSet:
         """
         assert len(self.dogsDataSet) == 20580
 
-    
+    def teset_getitem(self):
+        """
+        Tests the __getitem__ method.
+        """
+        assert self.dogsDataSet[0].shape == (500, 375, 3)
+        assert self.dogsDataSet[20579].shape == (500, 375, 3)
+        with pytest.raises(IndexError):
+            self.dogsDataSet[20580]
+
     
 
 if __name__ == '__main__':
