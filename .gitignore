@@ -2,3 +2,4 @@ images
 annotations
 *.egg-info
 *.pyc
+__pycache__

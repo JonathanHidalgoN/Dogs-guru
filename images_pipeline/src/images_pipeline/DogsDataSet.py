@@ -9,7 +9,7 @@
 import os
 from torch.utils.data import Dataset
 from torchvision.io import read_image
-import torch
+from torch import Tensor as torch_tensor
 from google_images_download import google_images_download
 from shutil import rmtree 
 
@@ -19,13 +19,16 @@ class DogsDataSet(Dataset):
     A class to represent the Stanford Dogs Dataset.
     Attributes:
         path: A string representing the path to the dataset.
+        species: A list of strings representing the classes in the dataset.
+        transform: A list of transformations to apply to the images in the dataset.
     """
 
-    def __init__(self, path : str) -> None:
+    def __init__(self, path : str, transform : object = None) -> None:
 
         self.path = path
         self._species = self.species
         self._full_paths = self._get_full_paths(path)
+        self.transform = transform
 
     @staticmethod
     def _get_full_paths(path : str) -> list:
@@ -118,8 +121,8 @@ class DogsDataSet(Dataset):
             A dictionary with the classes as keys and the number of images as values.
         """
         sub_paths = os.listdir(self.path)
-        count = {sub_path.split('-')[-1]:len(os.listdir(os.path.join(self.path, sub_path))) for sub_path in sub_paths}
-        return count
+        return {sub_path: len(os.listdir(os.path.join(self.path, sub_path))) for sub_path in sub_paths}
+        
         
     def __len__(self) ->int:
         """
@@ -138,7 +141,7 @@ class DogsDataSet(Dataset):
         #len(self) calls the __len__ method
         return f"Dataset with {len(self)} classes"
 
-    def __getitem__(self, index : int) -> torch.Tensor:
+    def __getitem__(self, index : int) -> torch_tensor:
         """
         Returns the class at the given index.
         Args:
@@ -151,19 +154,6 @@ class DogsDataSet(Dataset):
         else :
             image_path = self._full_paths[index]
             image = read_image(image_path)
+            if self.transform is not None:
+                image = self.transform(image)           
             return image
-
-    
-
-
-        
-        
-
-
-if __name__ == "__main__":
-    images_path = "images/Images"
-    dataset = DogsDataset(path = images_path)
-    dataset.add_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
-    print(len(dataset.species))
-    dataset.remove_species(["new_specie_1", "new_specie_2","new_specie_12","poodle","pug"])
-    print(len(dataset.species))
