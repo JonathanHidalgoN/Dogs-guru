@@ -4,6 +4,7 @@
 from torch import Tensor as torch_tensor
 import typing
 from torch import randint
+from skimage import io, transform
 
 class Rescale:
 
@@ -32,7 +33,7 @@ class Rescale:
             Tensor: Rescaled image.
 
         """
-        h, w = image.shape[:2]
+        c, h, w = image.shape[0:]
         #Check if the output size is a tuple or an integer
         if isinstance(self.output_size, int):
             if h > w:
@@ -49,7 +50,7 @@ class Rescale:
 
         new_h, new_w = int(new_h), int(new_w)
         #Resize the image
-        return image.resize((new_h, new_w))
+        return transform.resize(image, (c ,new_h, new_w))
 
 
 
@@ -81,15 +82,37 @@ class RandomCrop:
             Tensor: Cropped image.
 
         """
-        h, w = image.shape[:2]
+        c, h, w = image.shape[0:]
         new_h, new_w = self.output_size
 
         #In the tutorial they suggest to use pytorch's random function, they use numpy's randint function
-        top = randint(0, h - new_h)
-        left = randint(0, w - new_w)
+        top = randint(0, h - new_h,(1,))
+        left = randint(0, w - new_w,(1,))
 
-        return image[top: top + new_h, left: left + new_w]
+        return image[:,top: top + new_h, left: left + new_w]
 
+
+class ToTensor:
+    
+        """
+        Convert ndarrays in sample to Tensors.
+        """
+    
+        def __call__(self, image : torch_tensor) -> torch_tensor:
+            """
+            Convert ndarrays in sample to Tensors.
+    
+            Args:
+                image (Tensor): Image to be converted to tensor.
+    
+            Returns:
+                Tensor: Converted image.
+    
+            """
+            # swap color axis because
+            # numpy image: H x W x C
+            # torch image: C X H X W
+            return image.transpose((2, 0, 1))
 
 if "__name__" == "__main__":
     rescale = Rescale((100, 100))
