@@ -31,5 +31,12 @@ if __name__ == "__main__":
     transformed_dataset = DogsDataSet(path = train_parameters["path"], transform = composed)
     total_images = len(transformed_dataset)
     train_index , test_index = shuffle_data(total_images, train_parameters["proportion"])
-    dataloader = DataLoader(transformed_dataset, batch_size=train_parameters["batch_size"], shuffle=train_parameters["shuffle"], num_workers=4)
+    train_dataloader = DataLoader(transformed_dataset[train_index], 
+                                  batch_size=train_parameters["batch_size"], 
+                                  shuffle=train_parameters["shuffle"], 
+                                  num_workers=4)
+    test_dataloader = DataLoader(transformed_dataset[test_index], 
+                                  batch_size=train_parameters["batch_size"], 
+                                  shuffle=train_parameters["shuffle"], 
+                                  num_workers=4)
     
