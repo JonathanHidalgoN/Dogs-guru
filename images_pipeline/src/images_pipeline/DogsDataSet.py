@@ -12,6 +12,7 @@ from torchvision.io import read_image
 from torch import Tensor as torch_tensor
 from google_images_download import google_images_download
 from shutil import rmtree 
+from typing import Union
 
 class DogsDataSet(Dataset):
     #TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
@@ -141,7 +142,7 @@ class DogsDataSet(Dataset):
         #len(self) calls the __len__ method
         return f"Dataset with {len(self)} classes"
 
-    def __getitem__(self, index : int) -> torch_tensor:
+    def __getitem__(self, index : Union[int, list]) -> torch_tensor:
         """
         Returns the class at the given index.
         Args:
@@ -149,11 +150,22 @@ class DogsDataSet(Dataset):
         Returns:
             A string representing the class at the given index.
         """
-        if index >= len(self):
-            raise IndexError("Index out of range")
-        else :
-            image_path = self._full_paths[index]
-            image = read_image(image_path)
-            if self.transform is not None:
-                image = self.transform(image)           
-            return image
+        if isinstance(index, int):
+            if index >= len(self):
+                raise IndexError("Index out of range")
+            else :
+                image_path = self._full_paths[index]
+                image = read_image(image_path)
+                if self.transform is not None:
+                    image = self.transform(image)           
+                return image
+        elif isinstance(index, list):
+            images = []
+            for idx in index:
+                if self.transform is not None:
+                    images.append(self.transform(self[idx]))
+                else:
+                    images.append(self[idx])
+            return images
+        else:
+            raise TypeError("Index must be an integer or a list of integers")
