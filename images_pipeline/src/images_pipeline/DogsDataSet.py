@@ -162,6 +162,8 @@ class DogsDataSet(Dataset):
         elif isinstance(index, list):
             images = []
             for idx in index:
+                if idx >= len(self):
+                    raise IndexError("Index out of range")
                 if self.transform is not None:
                     images.append(self.transform(self[idx]))
                 else:
@@ -169,3 +171,16 @@ class DogsDataSet(Dataset):
             return images
         else:
             raise TypeError("Index must be an integer or a list of integers")
+
+if __name__ == "__main__":
+    index = [1,2]
+    result = isinstance(index, list)
+    data = DogsDataSet(path = "images/Images")
+    data[[1,2]]
+    train_index = [0,1,2,3,5]
+    test_index = [4,6,7,8]
+    train_data = data[train_index]
+    test_data = data[test_index]
+    print(len(train_data))
+    print(len(test_data))
+    print(type(train_data[0]))
