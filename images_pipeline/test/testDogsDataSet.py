@@ -2,6 +2,7 @@ import pytest
 from images_pipeline.DogsDataSet import DogsDataSet
 from images_pipeline.Transformations import Rescale, RandomCrop
 from torchvision import transforms
+from torch import equal
 
 class TestDogsDataSet:
 
@@ -9,7 +10,7 @@ class TestDogsDataSet:
         path = "images/Images"
         self.dogsDataSet = DogsDataSet(path)
         
-    def test_get_dog_breeds(self):
+    def test_get_dog_breeds(self):  
         """
         Tests the get_dog_breeds method.
         """
@@ -58,8 +59,15 @@ class TestDogsDataSet:
         assert self.dogsDataSet[0].shape == (3, 224, 224)
         assert self.dogsDataSet[20579].shape == (3, 224, 224)
         self.dogsDataSet.transform = None
-
-    
+        assert len(self.dogsDataSet[[1,2]]) == 2
+        two_items = self.dogsDataSet[[0,10]]
+        assert type(two_items[0]) == type(two_items[1])
+        assert type(two_items[0]) == type(self.dogsDataSet[0])
+        assert equal(two_items[0], self.dogsDataSet[0])
+        with pytest.raises(TypeError):
+            self.dogsDataSet["test"]
+        with pytest.raises(IndexError):
+            self.dogsDataSet[[1, 20580]]
 
     
 
