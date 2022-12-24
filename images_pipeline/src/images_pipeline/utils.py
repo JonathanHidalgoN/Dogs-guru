@@ -2,7 +2,7 @@ from torch import tensor as torch_tensor
 from torch import randperm  as torch_randperm
 from torch import arange as torch_arange
 from typing import List
-
+import os 
 
 def generate_indexes(number_images : int, proportions : List[float]) -> torch_tensor:
     if sum(proportions) != 1:
@@ -15,6 +15,18 @@ def generate_indexes(number_images : int, proportions : List[float]) -> torch_te
     #have a list of indexes, maybe I should return it, not a big deal but not the best practice
     for index in indexes:
         yield index
+
+def count_total_images(path:str) ->int:
+    """
+    Counts the total number of images in the dataset.
+    Args:
+        path: A string representing the path to the dataset.
+    Returns:
+        An integer representing the total number of images in the dataset.
+    """
+    sub_paths = os.listdir(path)
+    return sum([len(os.listdir(os.path.join(path, sub_path))) for sub_path in sub_paths])
+
 
 if __name__ == "__main__":
     generator = generate_indexes(100, [0.1, 0.2, 0.3, 0.4])
@@ -31,7 +43,8 @@ if __name__ == "__main__":
     assert len(indexes[0]) == 100
     #This throws an error, I don't know why, because the type of indexes[0] is torch.tensor
     #assert type(indexes[0]) == torch_tensor
-    print(type(indexes[0]))
-
+    #print(type(indexes[0]))
+    total_images = cont_total_images("images/Images")
+    assert total_images == 20580
     
     
