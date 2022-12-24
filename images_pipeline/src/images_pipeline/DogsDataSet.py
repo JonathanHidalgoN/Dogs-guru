@@ -12,7 +12,8 @@ from torchvision.io import read_image
 from torch import Tensor as torch_tensor
 from google_images_download import google_images_download
 from shutil import rmtree 
-from typing import Union
+from typing import Union, Generator, List
+from warnings import warn
 
 class DogsDataSet(Dataset):
     #TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
@@ -22,18 +23,19 @@ class DogsDataSet(Dataset):
         path: A string representing the path to the dataset.
         species: A list of strings representing the classes in the dataset.
         transform: A list of transformations to apply to the images in the dataset.
+        indexes: A generator of indexes, in utils.py there is a function to generate them.
     """
 
-    def __init__(self, path : str, transform : object = None) -> None:
+    def __init__(self, path : str, generator : Generator[int,List[float],torch_tensor], transform : object = None) -> None:
 
         self.path = path
         self._species = self.species
-        self._full_paths = self._get_full_paths(path)
+        self.indexes = next(generator)
+        self._full_paths = self._get_full_paths()
         self.transform = transform
-
-
-    @staticmethod
-    def _get_full_paths(path : str) -> list:
+        
+        
+    def _get_full_paths(self) -> List[str]:
         """
         Returns a list of full paths to the images in the dataset.
         Args:
@@ -41,14 +43,17 @@ class DogsDataSet(Dataset):
         Returns:
             A list of strings representing the full paths to the images in the dataset.
         """
-        sub_paths = os.listdir(path)
+        sub_paths = os.listdir(self.path)
         full_paths = []
         for sub_path in sub_paths:
-            full_paths.extend([os.path.join(path, sub_path, image) for image in os.listdir(os.path.join(path, sub_path))])
-        return full_paths
+            full_paths.extend([os.path.join(self.path, sub_path, image) 
+            for image in os.listdir(os.path.join(self.path, sub_path))])
+        return [full_paths[index] for index in self.indexes]
+        #Cant use this because Tensor of strings is not supported
+        #return torch_index_select(torch_tensor(full_paths), 0, self.indexes)
 
     @property
-    def species(self) ->list:
+    def species(self) ->List[str]:
         """
         Returns a list of classes in the dataset.
         Returns:
@@ -57,7 +62,7 @@ class DogsDataSet(Dataset):
         species = os.listdir(self.path)
         return [specie.split('-')[-1] for specie in species]
 
-    def _populate_species(self, query:str, number_of_images : int = 100) -> list:
+    def _populate_species(self, query:str, number_of_images : int = 100) -> List[str]:
         """
         Populates the dataset with images from Google Images.
         Args:
@@ -73,7 +78,7 @@ class DogsDataSet(Dataset):
         return [os.path.join(new_path, image) for image in os.listdir(new_path)]
         
 
-    def add_species(self, new_species : list, images_per_specie : list = []) -> None:
+    def add_species(self, new_species : List[str], images_per_specie : List[int] = []) -> None:
         """
         Adds new classes to the dataset.
         Args:
@@ -92,7 +97,7 @@ class DogsDataSet(Dataset):
                 print(f"Folder {new_specie} already exists")
 
     
-    def remove_species(self, species_to_remove : list) -> None:
+    def remove_species(self, species_to_remove : List[str]) -> None:
         """
         Removes classes from the dataset.
         Args:
@@ -122,6 +127,8 @@ class DogsDataSet(Dataset):
         Returns:
             A dictionary with the classes as keys and the number of images as values.
         """
+        #Not working properly since I added the indexes, this counts all the images in the dataset
+        warn(f"This method ({self.count_images.__name__}) counts all the images in the dataset, not just the ones in the current instance of the class")
         sub_paths = os.listdir(self.path)
         return {sub_path: len(os.listdir(os.path.join(self.path, sub_path))) for sub_path in sub_paths}
         
@@ -132,7 +139,7 @@ class DogsDataSet(Dataset):
         Returns:
             An integer representing the number of classes in the dataset.
         """
-        return sum(self.count_images().values())
+        return len(self._full_paths)
 
     def __repr__(self) -> str:
         """
@@ -143,7 +150,8 @@ class DogsDataSet(Dataset):
         #len(self) calls the __len__ method
         return f"Dataset with {len(self)} classes"
 
-    def __getitem__(self, index : Union[int, list]) -> torch_tensor:
+    def __getitem__(self, index : Union[int, List[str]]) -> torch_tensor:
+        #This is not always a tensor, it can be a list of tensors or an image
         """
         Returns the class at the given index.
         Args:
@@ -169,16 +177,17 @@ class DogsDataSet(Dataset):
             raise TypeError("Index must be an integer or a list of integers")
 
 if __name__ == "__main__":
-    index = [1,2]
-    result = isinstance(index, list)
-    data = DogsDataSet(path = "images/Images")
-    data[[1,2]]
-    train_index = [0,1,2,3,5]
-    test_index = [4,6,7,8]
-    train_data = data[train_index]
-    test_data = data[test_index]
-    print(len(train_data))
-    print(len(test_data))
-    print(type(train_data[0]))
-    temportal = data[0]
-    print(type(temportal))
+    from utils import generate_indexes, count_total_images
+    path = "images/Images"
+    total_images = count_total_images(path)
+    proportion = [.8, .1, .1]
+    index_generator = generate_indexes(total_images, proportion)
+    train_dataset = DogsDataSet(path, index_generator)
+    test_dataset = DogsDataSet(path, index_generator)
+    val_dataset = DogsDataSet(path, index_generator)
+    long1 = len(train_dataset)
+    long2 = len(test_dataset)
+    long3 = len(val_dataset)
+    print(long1, long2, long3)
+    print(sum([long1, long2, long3]))
+    
