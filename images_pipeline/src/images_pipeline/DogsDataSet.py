@@ -128,7 +128,7 @@ class DogsDataSet(Dataset):
             A dictionary with the classes as keys and the number of images as values.
         """
         #Not working properly since I added the indexes, this counts all the images in the dataset
-        warn(f"This method ({self.count_images.__name__}) counts all the images in the dataset, not just the ones in the current instance of the class")
+        warn(f"({self.count_images.__name__}) counts all the images in the dataset, not just the ones in the current instance of the class")
         sub_paths = os.listdir(self.path)
         return {sub_path: len(os.listdir(os.path.join(self.path, sub_path))) for sub_path in sub_paths}
         
@@ -190,4 +190,3 @@ if __name__ == "__main__":
     long3 = len(val_dataset)
     print(long1, long2, long3)
     print(sum([long1, long2, long3]))
-    
