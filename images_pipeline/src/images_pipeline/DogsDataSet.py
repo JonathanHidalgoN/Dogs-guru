@@ -31,6 +31,7 @@ class DogsDataSet(Dataset):
         self._full_paths = self._get_full_paths(path)
         self.transform = transform
 
+
     @staticmethod
     def _get_full_paths(path : str) -> list:
         """
@@ -162,12 +163,7 @@ class DogsDataSet(Dataset):
         elif isinstance(index, list):
             images = []
             for idx in index:
-                if idx >= len(self):
-                    raise IndexError("Index out of range")
-                if self.transform is not None:
-                    images.append(self.transform(self[idx]))
-                else:
-                    images.append(self[idx])
+                images.append(self[idx])
             return images
         else:
             raise TypeError("Index must be an integer or a list of integers")
@@ -184,3 +180,5 @@ if __name__ == "__main__":
     print(len(train_data))
     print(len(test_data))
     print(type(train_data[0]))
+    temportal = data[0]
+    print(type(temportal))
