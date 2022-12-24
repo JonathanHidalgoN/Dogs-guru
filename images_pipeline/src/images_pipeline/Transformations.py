@@ -5,7 +5,8 @@ from torch import Tensor as torch_tensor
 import typing
 from torch import randint
 from skimage import transform
-
+from numpy import ndarray as np_ndarray
+from torch import from_numpy as torch_from_numpy
 class Rescale:
 
     """
@@ -100,7 +101,7 @@ class ToTensor:
         Convert ndarrays in sample to Tensors.
         """
     
-        def __call__(self, image : torch_tensor) -> torch_tensor:
+        def __call__(self, image : torch_tensor ) -> torch_tensor:
             """
             Convert ndarrays in sample to Tensors.
     
@@ -114,7 +115,9 @@ class ToTensor:
             # swap color axis because
             # numpy image: H x W x C
             # torch image: C X H X W
-            return image.transpose((2, 0, 1))
+            if not isinstance(image, np_ndarray ):
+                raise TypeError("The image is not a numpy.ndarray, it is a {}".format(type(image)))
+            return torch_from_numpy(image.transpose((2, 1, 0)))   
 
 if "__name__" == "__main__":
     rescale = Rescale((100, 100))
