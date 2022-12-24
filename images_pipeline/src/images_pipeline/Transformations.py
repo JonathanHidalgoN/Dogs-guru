@@ -84,6 +84,8 @@ class RandomCrop:
         """
         c, h, w = image.shape[0:]
         new_h, new_w = self.output_size
+        if new_h > h or new_w > w:
+            raise ValueError("The output size is greater than the image size")
 
         #In the tutorial they suggest to use pytorch's random function, they use numpy's randint function
         top = randint(0, h - new_h,(1,))
