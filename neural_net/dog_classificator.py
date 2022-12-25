@@ -19,23 +19,25 @@ def shuffle_data(total_images : int, proportion : float = .8) -> list:
     return random_list[:to_train], random_list[to_train:]
 
 train_parameters = {"resize" : (256,56),
-                   "crop" : 224,
-                   "path" : "/kaggle/input/stanford-dogs-dataset/images/Images",
+                   "crop" : 0,
+                   "path" : "images/Images",
                    "batch_size" : 128,
                    "shuffle" : True,
                    "proportion" : .8}
 
 if __name__ == "__main__":
     composed = transforms.Compose([
-        Rescale(train_parameters["resize"]),RandomCrop(train_parameters["crop"]),ToTensor()])
+        Rescale(train_parameters["resize"]),ToTensor()])
     transformed_dataset = DogsDataSet(path = train_parameters["path"], transform = composed)
     total_images = len(transformed_dataset)
     train_index , test_index = shuffle_data(total_images, train_parameters["proportion"])
-    train_dataloader = DataLoader(transformed_dataset[train_index], 
+    train_dataset = transformed_dataset[train_index]
+    test_dataset = transformed_dataset[test_index]
+    train_dataloader = DataLoader(train_dataset, 
                                   batch_size=train_parameters["batch_size"], 
                                   shuffle=train_parameters["shuffle"], 
                                   num_workers=4)
-    test_dataloader = DataLoader(transformed_dataset[test_index], 
+    test_dataloader = DataLoader(test_dataset, 
                                   batch_size=train_parameters["batch_size"], 
                                   shuffle=train_parameters["shuffle"], 
                                   num_workers=4)
