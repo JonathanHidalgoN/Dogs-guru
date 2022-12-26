@@ -194,6 +194,13 @@ class DogsDataSet(Dataset):
         else:
             raise TypeError("Index must be an integer or a list of integers")
 
+    def get_labels(self) -> List:
+        """
+        Returns the labels of the dataset.
+        Returns:
+            A tensor representing the labels of the dataset.
+        """
+        return [path.split("-")[-1] for path in self._full_paths]
 
 if __name__ == "__main__":
     from utils import generate_indexes, count_total_images

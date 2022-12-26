@@ -58,6 +58,16 @@ class TestDogsDataSet:
         assert lens[1] == int(self.total_images * self.proportion[1])
         assert lens[2] == int(self.total_images * self.proportion[2])
 
+
+    def test_get_labels(self):
+        """
+        Tests the get_labels method.
+        """
+        labels = [dataset.get_labels() for dataset in self.datasets]
+        assert len(labels[0]) == int(self.total_images * self.proportion[0])
+        assert len(labels[1]) == int(self.total_images * self.proportion[1])
+        assert len(labels[2]) == int(self.total_images * self.proportion[2])
+
     def test_getitem(self):
         """
         Tests the __getitem__ method.
