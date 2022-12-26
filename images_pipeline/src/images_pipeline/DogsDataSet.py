@@ -194,13 +194,29 @@ class DogsDataSet(Dataset):
         else:
             raise TypeError("Index must be an integer or a list of integers")
 
+    def _extract_name(self, full_label : str) -> str:
+        """
+        Extracts the name of the class from the full path.
+        Args:
+            full_label: A string representing the full path to the class.
+        Returns:
+            A string representing the name of the class.
+        Logic :
+            The full path is of the form "images/Images/n02085620-Chihuahua/n02085620_10074.jpg"
+            The name of the class is "Chihuahua"
+            Looking for the first "-" and the first "/" after it gives the name of the class
+        """
+        start_index = full_label.index("-") + 1
+        end_index = full_label.index("/", start_index)
+        return full_label[start_index:end_index]
+
     def get_labels(self) -> List:
         """
         Returns the labels of the dataset.
         Returns:
             A tensor representing the labels of the dataset.
         """
-        return [path.split("-")[-1] for path in self._full_paths]
+        return [self._extract_name(path) for path in self._full_paths]
 
 if __name__ == "__main__":
     from utils import generate_indexes, count_total_images
