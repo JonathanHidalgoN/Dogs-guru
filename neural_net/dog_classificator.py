@@ -1,44 +1,115 @@
+import torchvision
+import torch
 from images_pipeline.DogsDataSet import DogsDataSet
 from images_pipeline.Transformations import Rescale, RandomCrop, ToTensor
+from images_pipeline.utils import generate_indexes, count_total_images
 from torchvision import transforms
 from torch.utils.data import DataLoader
-from random import shuffle
 
-def shuffle_data(total_images : int, proportion : float = .8) -> list:
-    """
-    Shuffle the data and return the indexes of the training and test data
-    Args:
-        total_images: total number of images
-        proportion: proportion of data to be used for training
-    Returns:
-        indexes of the training and test data
-    """
-    to_train = int(total_images * proportion)
-    random_list = [i for i in range(total_images)]
-    shuffle(random_list)
-    return random_list[:to_train], random_list[to_train:]
 
-train_parameters = {"resize" : (256,56),
-                   "crop" : 0,
-                   "path" : "images/Images",
-                   "batch_size" : 128,
-                   "shuffle" : True,
-                   "proportion" : .8}
+total_images = count_total_images("/kaggle/input/stanford-dogs-dataset/images/Images")
+train_parameters = {
+    "resize": (256, 256),
+    "crop": 224,
+    "path": "/kaggle/input/stanford-dogs-dataset/images/Images",
+    "batch_size": 128,
+    "shuffle": False,
+    "proportion": 0.8,
+    "index_generator": generate_indexes(total_images, [0.8, 0.1, 0.1]),
+}
 
 if __name__ == "__main__":
-    composed = transforms.Compose([
-        Rescale(train_parameters["resize"]),ToTensor()])
-    transformed_dataset = DogsDataSet(path = train_parameters["path"], transform = composed)
-    total_images = len(transformed_dataset)
-    train_index , test_index = shuffle_data(total_images, train_parameters["proportion"])
-    train_dataset = transformed_dataset[train_index]
-    test_dataset = transformed_dataset[test_index]
-    train_dataloader = DataLoader(train_dataset, 
-                                  batch_size=train_parameters["batch_size"], 
-                                  shuffle=train_parameters["shuffle"], 
-                                  num_workers=4)
-    test_dataloader = DataLoader(test_dataset, 
-                                  batch_size=train_parameters["batch_size"], 
-                                  shuffle=train_parameters["shuffle"], 
-                                  num_workers=4)
-    
+    composed = transforms.Compose(
+        [
+            Rescale(train_parameters["resize"]),
+            RandomCrop(train_parameters["crop"]),
+            ToTensor(),
+        ]
+    )
+    train_dataset = DogsDataSet(
+        train_parameters["path"], train_parameters["index_generator"]
+    )
+    test_dataset = DogsDataSet(
+        train_parameters["path"], train_parameters["index_generator"]
+    )
+    val_dataset = DogsDataSet(
+        train_parameters["path"], train_parameters["index_generator"]
+    )
+    train_dataloader = DataLoader(
+        train_dataset,
+        batch_size=train_parameters["batch_size"],
+        shuffle=train_parameters["shuffle"],
+        num_workers=4,
+    )
+    test_dataloader = DataLoader(
+        test_dataset,
+        batch_size=train_parameters["batch_size"],
+        shuffle=train_parameters["shuffle"],
+        num_workers=4,
+    )
+    val_dataloader = DataLoader(
+        val_dataset,
+        batch_size=train_parameters["batch_size"],
+        shuffle=train_parameters["shuffle"],
+        num_workers=4,
+    )
+
+
+class TrainDogsNet:
+
+    """
+    This class is used to train a neural network on the DogsDataSet.
+    Attributes:
+        model: A torchvision.models object representing the neural network to train.
+        criterion: A torch.nn.modules.loss object representing the loss function to use.
+        optimizer: A torch.optim.sgd.SGD object representing the optimizer to use.
+        scheduler: A torch.optim.lr_scheduler object representing the scheduler to use.
+    """
+
+    def __init__(
+        self,
+        model: torchvision.models,
+        criterion: torch.nn.modules.loss,
+        optimizer: torch.optim.sgd.SGD,
+        scheduler: torch.optim.lr_scheduler,
+    ):
+        self._model = model
+        self._criterion = criterion
+        self._optimizer = optimizer
+        self._scheduler = scheduler
+
+    # Define the properties of the class and their setters, maybe not necessary but won't hurt.
+    # ------------------------------------
+    @property
+    def model(self) -> torchvision.models:
+        return self._model
+
+    @model.setter
+    def model(self, model: torchvision.models) -> None:
+        self._model = model
+
+    @property
+    def criterion(self) -> torch.nn.modules.loss:
+        return self._criterion
+
+    @criterion.setter
+    def criterion(self, criterion: torch.nn.modules.loss) -> None:
+        self._criterion = criterion
+
+    @property
+    def optimizer(self) -> torch.optim.sgd.SGD:
+        return self._optimizer
+
+    @optimizer.setter
+    def optimizer(self, optimizer: torch.optim.sgd.SGD) -> None:
+        self._optimizer = optimizer
+
+    @property
+    def scheduler(self) -> torch.optim.lr_scheduler:
+        return self._scheduler
+
+    @scheduler.setter
+    def scheduler(self, scheduler: torch.optim.lr_scheduler) -> None:
+        self._scheduler = scheduler
+
+    # ------------------------------------
