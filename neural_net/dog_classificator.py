@@ -5,7 +5,8 @@ from images_pipeline.Transformations import Rescale, RandomCrop, ToTensor
 from images_pipeline.utils import generate_indexes, count_total_images
 from torchvision import transforms
 from torch.utils.data import DataLoader
-
+from time import time as time_time
+from typing import List
 
 total_images = count_total_images("/kaggle/input/stanford-dogs-dataset/images/Images")
 train_parameters = {
@@ -113,3 +114,63 @@ class TrainDogsNet:
         self._scheduler = scheduler
 
     # ------------------------------------
+
+    def _enconde_labels(self, labels: List[str], number_of_classes : int) -> torch.Tensor:
+        """
+        This method is used to encode the labels of the dataset.
+        Args:
+            labels: A list of strings representing the labels of the dataset.
+            number_of_classes: An integer representing the number of classes in the dataset.
+        Returns:
+            A torch.Tensor object representing the encoded labels.
+        """
+        encoded_labels = torch.zeros(number_of_classes)
+        for label in labels:
+            encoded_labels[int(label)] = 1
+        return encoded_labels
+
+
+    def train(self, epochs: int, train_dataloader: DataLoader, val_dataloader: DataLoader, verbose : bool = True) -> torchvision.models:
+        #SOURCE: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
+        """
+        This method is used to train the neural network.
+        Args:
+            epochs: An integer representing the number of epochs to train the neural network.
+            train_dataloader: A torch.utils.data.dataloader.DataLoader object representing the training set.
+            val_dataloader: A torch.utils.data.dataloader.DataLoader object representing the validation set.
+            verbose: A boolean representing whether to print the training progress or not.
+        Returns:
+            A torchvision.models object representing the trained neural network.
+        """
+        since = time_time()
+        best_model_wts = self._model.state_dict()
+        best_acc = 0.0
+
+        for epoch in range(epochs):
+            
+            if verbose:
+                print("Epoch {}/{}".format(epoch, epochs - 1))
+                print("-" * 10)
+            for phase in ["train", "val"]:
+                if phase == "train":
+                    self._model.train()
+                else:
+                    self._model.eval()
+
+            running_loss = 0.0
+            running_corrects = 0
+
+            pass
+        pass
+
+
+if __name__ == "__main__":
+    model = None
+    criterion = None
+    optimizer = None
+    scheduler = None
+    train_dogs_net = TrainDogsNet(model, criterion, optimizer, scheduler)
+    labels = train_dataloader.get_labels()
+    number_of_classes = len(set(labels))
+    train_dogs_net._enconde_labels(labels, number_of_classes)
+    pass
