@@ -3,12 +3,12 @@ from torch import randperm as torch_randperm
 from torch import arange as torch_arange
 from typing import List
 import os
+from warnings import warn
 
 
 def generate_indexes(number_images: int, proportions: List[float]) -> torch_tensor:
     if sum(proportions) != 1:
-        # Maybe raise an error here is too much
-        raise ValueError("The sum of proportions must be equal to 1.")
+        warn("The sum of proportions is less than 1, not using all data.")
     indexes = torch_arange(number_images)
     indexes = indexes[torch_randperm(number_images)]
     indexes = indexes.split(
