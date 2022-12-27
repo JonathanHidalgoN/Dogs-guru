@@ -1,59 +1,9 @@
+#Reduce imports to only the necessary ones
 import torchvision
 import torch
-from images_pipeline.DogsDataSet import DogsDataSet
-from images_pipeline.Transformations import Rescale, RandomCrop, ToTensor
-from images_pipeline.utils import generate_indexes, count_total_images
-from torchvision import transforms
 from torch.utils.data import DataLoader
 from time import time as time_time
 from typing import List
-
-total_images = count_total_images("/kaggle/input/stanford-dogs-dataset/images/Images")
-train_parameters = {
-    "resize": (256, 256),
-    "crop": 224,
-    "path": "/kaggle/input/stanford-dogs-dataset/images/Images",
-    "batch_size": 128,
-    "shuffle": False,
-    "proportion": 0.8,
-    "index_generator": generate_indexes(total_images, [0.8, 0.1, 0.1]),
-}
-
-if __name__ == "__main__":
-    composed = transforms.Compose(
-        [
-            Rescale(train_parameters["resize"]),
-            RandomCrop(train_parameters["crop"]),
-            ToTensor(),
-        ]
-    )
-    train_dataset = DogsDataSet(
-        train_parameters["path"], train_parameters["index_generator"]
-    )
-    test_dataset = DogsDataSet(
-        train_parameters["path"], train_parameters["index_generator"]
-    )
-    val_dataset = DogsDataSet(
-        train_parameters["path"], train_parameters["index_generator"]
-    )
-    train_dataloader = DataLoader(
-        train_dataset,
-        batch_size=train_parameters["batch_size"],
-        shuffle=train_parameters["shuffle"],
-        num_workers=4,
-    )
-    test_dataloader = DataLoader(
-        test_dataset,
-        batch_size=train_parameters["batch_size"],
-        shuffle=train_parameters["shuffle"],
-        num_workers=4,
-    )
-    val_dataloader = DataLoader(
-        val_dataset,
-        batch_size=train_parameters["batch_size"],
-        shuffle=train_parameters["shuffle"],
-        num_workers=4,
-    )
 
 
 class TrainDogsNet:
@@ -162,15 +112,3 @@ class TrainDogsNet:
 
             pass
         pass
-
-
-if __name__ == "__main__":
-    model = None
-    criterion = None
-    optimizer = None
-    scheduler = None
-    train_dogs_net = TrainDogsNet(model, criterion, optimizer, scheduler)
-    labels = train_dataloader.get_labels()
-    number_of_classes = len(set(labels))
-    train_dogs_net._enconde_labels(labels, number_of_classes)
-    pass

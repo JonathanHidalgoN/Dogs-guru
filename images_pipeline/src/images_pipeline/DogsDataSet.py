@@ -9,6 +9,7 @@
 import os
 from torch.utils.data import Dataset
 from torchvision.io import read_image
+from torch import zeros as torch_zeros
 from torch import Tensor as torch_tensor
 from google_images_download import google_images_download
 from shutil import rmtree
@@ -69,7 +70,10 @@ class DogsDataSet(Dataset):
         A list of strings representing the classes in the dataset.
         """
         species = os.listdir(self.path)
-        return [specie.split("-")[-1] for specie in species]
+        for idx, specie in enumerate(species):
+            first_dash = specie.find("-")
+            species[idx] = specie[first_dash + 1 :]
+        return species        
 
     def _populate_species(self, query: str, number_of_images: int = 100) -> List[str]:
         """
@@ -153,7 +157,7 @@ class DogsDataSet(Dataset):
 
     def __len__(self) -> int:
         """
-        Returns the number of classes in the dataset.
+        Returns the number of images in the dataset.
         Returns:
             An integer representing the number of classes in the dataset.
         """
@@ -194,13 +198,53 @@ class DogsDataSet(Dataset):
         else:
             raise TypeError("Index must be an integer or a list of integers")
 
-    def get_labels(self) -> List:
+    def _extract_name(self, full_label: str) -> str:
+        """
+        Extracts the name of the class from the full path.
+        Args:
+            full_label: A string representing the full path to the class.
+        Returns:
+            A string representing the name of the class.
+        Logic :
+            The full path is of the form "images/Images/n02085620-Chihuahua/n02085620_10074.jpg"
+            The name of the class is "Chihuahua"
+            Looking for the first "-" and the first "/" after it gives the name of the class
+        """
+        start_index = full_label.index("-") + 1
+        end_index = full_label.index("/", start_index)
+        return full_label[start_index:end_index]
+
+    def get_labels(self) -> torch_tensor:
         """
         Returns the labels of the dataset.
         Returns:
             A tensor representing the labels of the dataset.
         """
-        return [path.split("-")[-1] for path in self._full_paths]
+        names = [self._extract_name(path) for path in self._full_paths]
+        different_species = len(set(names))
+        try:
+            # Check that the number of species in the dataset is the same as the number of species in the class
+            # This is to avoid errors when creating the labels
+            assert different_species == len(self._species)
+        except AssertionError:
+            raise AssertionError(
+                f"Number of species in dataset ({different_species}) does not match number of species in class ({len(self._species)})"
+            )
+        self.specie_to_int = {name: idx for idx, name in enumerate(self._species)}
+        full_zeros = torch_zeros(len(names), different_species)
+        for idx, name in enumerate(names):
+            full_zeros[idx, self.specie_to_int[name]] = 1
+        return full_zeros
+
+    def get_labels_as_string(self) -> List[str]:
+        """
+        Returns the labels of the dataset as a list of strings.
+        Returns:
+            A list of strings representing the labels of the dataset.
+        """
+        names = [self._extract_name(path) for path in self._full_paths]
+        return names
+
 
 if __name__ == "__main__":
     from utils import generate_indexes, count_total_images
@@ -210,10 +254,6 @@ if __name__ == "__main__":
     proportion = [0.8, 0.1, 0.1]
     index_generator = generate_indexes(total_images, proportion)
     train_dataset = DogsDataSet(path, index_generator)
-    test_dataset = DogsDataSet(path, index_generator)
-    val_dataset = DogsDataSet(path, index_generator)
-    long1 = len(train_dataset)
-    long2 = len(test_dataset)
-    long3 = len(val_dataset)
-    print(long1, long2, long3)
-    print(sum([long1, long2, long3]))
+    labels = train_dataset.get_labels()
+    print(labels)
+    pass # breakpoint

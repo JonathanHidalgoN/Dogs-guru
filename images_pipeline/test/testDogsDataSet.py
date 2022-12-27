@@ -7,10 +7,12 @@ from images_pipeline.utils import generate_indexes, count_total_images
 
 
 class TestDogsDataSet:
+
     def setup_method(self):
         path = "images/Images"
         self.total_images = count_total_images(path)
-        self.proportion = [0.3, 0.3, 0.4]
+        #This is the proportion of the dataset that will be used for training, validation and testing
+        self.proportion = [0.8, 0.1, 0.1]
         index_generator = generate_indexes(self.total_images, self.proportion)
         self.datasets = [DogsDataSet(path, index_generator) for _ in self.proportion]
 
@@ -30,6 +32,13 @@ class TestDogsDataSet:
         assert lens[0] == int(self.total_images * self.proportion[0])
         assert lens[1] == int(self.total_images * self.proportion[1])
         assert lens[2] == int(self.total_images * self.proportion[2])
+
+    def test_number_species(self):
+        """
+        Tests the number_species method.
+        """
+        for dataset in self.datasets:
+            assert len(dataset.species) == 120
 
     @pytest.mark.skip(
         reason="This test is not working but now I dont use this method, maybe I will use it in the future"
@@ -59,11 +68,11 @@ class TestDogsDataSet:
         assert lens[2] == int(self.total_images * self.proportion[2])
 
 
-    def test_get_labels(self):
+    def test_get_labels_as_string(self):
         """
         Tests the get_labels method.
         """
-        labels = [dataset.get_labels() for dataset in self.datasets]
+        labels = [dataset.get_labels_as_string() for dataset in self.datasets]
         assert len(labels[0]) == int(self.total_images * self.proportion[0])
         assert len(labels[1]) == int(self.total_images * self.proportion[1])
         assert len(labels[2]) == int(self.total_images * self.proportion[2])
@@ -121,8 +130,17 @@ class TestDogsDataSet:
         assert len(two_items_per_dataset[2]) == 2
         # --------------------------------------------------------------------------
 
+    def test_get_labels(self):
+        """
+        Tests the get_labels method.
+        """
+        labels = [dataset.get_labels() for dataset in self.datasets]
+        for label,dataset in zip(labels,self.datasets):
+            # Check if the labels are in the correct range
+            assert label.shape == (len(label), len(dataset.species))
 
 if __name__ == "__main__":
     import subprocess
-
-    subprocess.call(["pytest", str(__file__)])
+    times_to_run = 1
+    for i in range(times_to_run):
+        subprocess.call(["pytest", str(__file__)])
