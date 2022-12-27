@@ -34,6 +34,16 @@ def count_total_images(path: str) -> int:
     )
 
 
+def count_total_classes(path: str) -> int:
+    """
+    Counts the total number of classes in the dataset.
+    Args:
+        path: A string representing the path to the dataset.
+    Returns:
+        An integer representing the total number of classes in the dataset.
+    """
+    return len(os.listdir(path))
+
 if __name__ == "__main__":
     generator = generate_indexes(100, [0.1, 0.2, 0.3, 0.4])
     indexes = [index for index in generator]
@@ -52,3 +62,5 @@ if __name__ == "__main__":
     # print(type(indexes[0]))
     total_images = count_total_images("images/Images")
     assert total_images == 20580
+    total_classes = count_total_classes("images/Images")
+    assert total_classes == 120
