@@ -70,7 +70,10 @@ class DogsDataSet(Dataset):
         A list of strings representing the classes in the dataset.
         """
         species = os.listdir(self.path)
-        return [specie.split("-")[-1] for specie in species]
+        for idx, specie in enumerate(species):
+            first_dash = specie.find("-")
+            species[idx] = specie[first_dash + 1 :]
+        return species        
 
     def _populate_species(self, query: str, number_of_images: int = 100) -> List[str]:
         """
@@ -251,10 +254,6 @@ if __name__ == "__main__":
     proportion = [0.8, 0.1, 0.1]
     index_generator = generate_indexes(total_images, proportion)
     train_dataset = DogsDataSet(path, index_generator)
-    test_dataset = DogsDataSet(path, index_generator)
-    val_dataset = DogsDataSet(path, index_generator)
-    long1 = len(train_dataset)
-    long2 = len(test_dataset)
-    long3 = len(val_dataset)
-    print(long1, long2, long3)
-    print(sum([long1, long2, long3]))
+    labels = train_dataset.get_labels()
+    print(labels)
+    pass # breakpoint
