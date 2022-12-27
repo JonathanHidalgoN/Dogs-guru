@@ -1,4 +1,4 @@
-#Reduce imports to only the necessary ones
+#TO DO : Reduce imports to only the necessary ones
 import torchvision
 import torch
 from torch.utils.data import DataLoader
@@ -21,7 +21,7 @@ class TrainDogsNet:
         self,
         model: torchvision.models,
         criterion: torch.nn.modules.loss,
-        optimizer: torch.optim.sgd.SGD,
+        optimizer: torch.optim,
         scheduler: torch.optim.lr_scheduler,
     ):
         self._model = model
@@ -48,11 +48,11 @@ class TrainDogsNet:
         self._criterion = criterion
 
     @property
-    def optimizer(self) -> torch.optim.sgd.SGD:
+    def optimizer(self) -> torch.optim:
         return self._optimizer
 
     @optimizer.setter
-    def optimizer(self, optimizer: torch.optim.sgd.SGD) -> None:
+    def optimizer(self, optimizer: torch.optim) -> None:
         self._optimizer = optimizer
 
     @property
@@ -74,11 +74,6 @@ class TrainDogsNet:
         Returns:
             A torch.Tensor object representing the encoded labels.
         """
-        encoded_labels = torch.zeros(number_of_classes)
-        for label in labels:
-            encoded_labels[int(label)] = 1
-        return encoded_labels
-
 
     def train(self, epochs: int, train_dataloader: DataLoader, val_dataloader: DataLoader, verbose : bool = True) -> torchvision.models:
         #SOURCE: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
