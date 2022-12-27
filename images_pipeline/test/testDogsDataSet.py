@@ -68,11 +68,11 @@ class TestDogsDataSet:
         assert lens[2] == int(self.total_images * self.proportion[2])
 
 
-    def test_get_labels(self):
+    def test_get_labels_as_string(self):
         """
         Tests the get_labels method.
         """
-        labels = [dataset.get_labels() for dataset in self.datasets]
+        labels = [dataset.get_labels_as_string() for dataset in self.datasets]
         assert len(labels[0]) == int(self.total_images * self.proportion[0])
         assert len(labels[1]) == int(self.total_images * self.proportion[1])
         assert len(labels[2]) == int(self.total_images * self.proportion[2])
@@ -130,9 +130,17 @@ class TestDogsDataSet:
         assert len(two_items_per_dataset[2]) == 2
         # --------------------------------------------------------------------------
 
+    def test_get_labels(self):
+        """
+        Tests the get_labels method.
+        """
+        labels = [dataset.get_labels() for dataset in self.datasets]
+        for label,dataset in zip(labels,self.datasets):
+            # Check if the labels are in the correct range
+            assert label.shape == (len(label), len(dataset.species))
 
 if __name__ == "__main__":
     import subprocess
-    times_to_run = 10
+    times_to_run = 1
     for i in range(times_to_run):
         subprocess.call(["pytest", str(__file__)])
