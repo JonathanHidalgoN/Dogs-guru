@@ -195,7 +195,7 @@ class DogsDataSet(Dataset):
         else:
             raise TypeError("Index must be an integer or a list of integers")
 
-    def _extract_name(self, full_label : str) -> str:
+    def _extract_name(self, full_label: str) -> str:
         """
         Extracts the name of the class from the full path.
         Args:
@@ -211,7 +211,6 @@ class DogsDataSet(Dataset):
         end_index = full_label.index("/", start_index)
         return full_label[start_index:end_index]
 
-
     def get_labels(self) -> torch_tensor:
         """
         Returns the labels of the dataset.
@@ -222,15 +221,27 @@ class DogsDataSet(Dataset):
         different_species = len(set(names))
         try:
             # Check that the number of species in the dataset is the same as the number of species in the class
-            # This is to avoid errors when creating the labels 
+            # This is to avoid errors when creating the labels
             assert different_species == len(self._species)
         except AssertionError:
-            raise AssertionError(f"Number of species in dataset ({different_species}) does not match number of species in class ({len(self._species)})")
+            raise AssertionError(
+                f"Number of species in dataset ({different_species}) does not match number of species in class ({len(self._species)})"
+            )
         self.specie_to_int = {name: idx for idx, name in enumerate(self._species)}
         full_zeros = torch_zeros(len(names), different_species)
         for idx, name in enumerate(names):
             full_zeros[idx, self.specie_to_int[name]] = 1
-        return full_zeros        
+        return full_zeros
+
+    def get_labels_as_string(self) -> List[str]:
+        """
+        Returns the labels of the dataset as a list of strings.
+        Returns:
+            A list of strings representing the labels of the dataset.
+        """
+        names = [self._extract_name(path) for path in self._full_paths]
+        return names
+
 
 if __name__ == "__main__":
     from utils import generate_indexes, count_total_images
