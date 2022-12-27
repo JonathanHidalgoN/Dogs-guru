@@ -14,7 +14,7 @@ from torch.optim import lr_scheduler as torch_lr_scheduler
 from torch import device as torch_device
 from torch.cuda import is_available as torch_cuda_is_available
 from torchvision import transforms
-from torchvision.models import resnet18 as models_resnet18
+from torchvision.models.resnet import resnet18 as models_resnet18
 
 total_images = count_total_images("images/Images")
 total_classes = count_total_classes("images/Images")
@@ -25,6 +25,8 @@ train_parameters = {
     "batch_size": 128,
     "shuffle": False,
     "index_generator": generate_indexes(total_images, [0.8, 0.1, 0.1]),
+    "epochs": 10,
+    "device": torch_device("cuda:0" if torch_cuda_is_available() else "cpu")
 }
 
 # Myabe parameters should be in a separate file, or in a function that returns a dictionary.
@@ -53,13 +55,13 @@ if __name__ == "__main__":
         ]
     )
     train_dataset = DogsDataSet(
-        train_parameters["path"], train_parameters["index_generator"]
+        train_parameters["path"], train_parameters["index_generator"], transform=composed
     )
     test_dataset = DogsDataSet(
-        train_parameters["path"], train_parameters["index_generator"]
+        train_parameters["path"], train_parameters["index_generator"], transform=composed
     )
     val_dataset = DogsDataSet(
-        train_parameters["path"], train_parameters["index_generator"]
+        train_parameters["path"], train_parameters["index_generator"], transform=composed
     )
     train_dataloader = DataLoader(
         train_dataset,
@@ -85,4 +87,12 @@ if __name__ == "__main__":
         optimizer=neural_net_parameters["optimizer"],
         scheduler=neural_net_parameters["scheduler"],
         criterion=neural_net_parameters["criterion"],
+    )
+
+    training_class.train(
+        epochs = train_parameters["epochs"],
+        train_dataloader=train_dataloader,
+        val_dataloader=val_dataloader,
+        verbose=True,
+        device=train_parameters["device"]
     )

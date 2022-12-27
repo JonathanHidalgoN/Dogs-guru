@@ -3,7 +3,6 @@ import torchvision
 import torch
 from torch.utils.data import DataLoader
 from time import time as time_time
-from typing import List
 
 
 class TrainDogsNet:
@@ -70,6 +69,7 @@ class TrainDogsNet:
         train_dataloader: DataLoader,
         val_dataloader: DataLoader,
         verbose: bool = True,
+        device: torch.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     ) -> torchvision.models:
         # SOURCE: https://pytorch.org/tutorials/beginner/transfer_learning_tutorial.html
         """
@@ -106,8 +106,8 @@ class TrainDogsNet:
                     dataloader = val_dataloader
                 for inputs in dataloader:
                     labels = dataloader.dataset.get_labels()
-                    inputs = inputs.to(self.device)
-                    labels = labels.to(self.device)
+                    inputs = inputs.to(device)
+                    labels = labels.to(device)
 
                     # zero the parameter gradients
                     self.optimizer.zero_grad()
