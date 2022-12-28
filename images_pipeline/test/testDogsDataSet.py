@@ -91,10 +91,10 @@ class TestDogsDataSet:
         ]
         for idx, dataset in enumerate(self.datasets):
             dataset.transform = transformations[idx]
-        assert self.datasets[0][0].shape == (256, 256, 3)
-        assert self.datasets[0][100].shape == (256, 256, 3)
-        assert self.datasets[1][0].shape == (224, 224, 3)
-        assert self.datasets[1][78].shape == (224, 224, 3)
+        assert self.datasets[0][0].shape == (3, 256, 256)
+        assert self.datasets[0][100].shape == (3, 256, 256)
+        assert self.datasets[1][0].shape == (3, 224, 224)
+        assert self.datasets[1][78].shape == (3, 224, 224)
         # -------------------------------------------------------------------------
         # Test the index error
         with pytest.raises(IndexError):
