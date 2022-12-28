@@ -120,7 +120,7 @@ class ToTensor:
             raise TypeError(
                 "The image is not a numpy.ndarray, it is a {}".format(type(image))
             )
-        return torch_from_numpy(image.transpose((2, 1, 0)))
+        return torch_from_numpy(image.transpose((0, 2, 1)))
 
 
 if "__name__" == "__main__":
