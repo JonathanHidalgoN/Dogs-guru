@@ -120,6 +120,33 @@ class TestDogsDataSet:
         assert len(two_items_per_dataset[1]) == 2
         assert len(two_items_per_dataset[2]) == 2
         # --------------------------------------------------------------------------
+        # Test labels
+        # Since labels are one hot encoded, the shape of the labels should be equal to the number of species
+        assert self.datasets[0][0][1].shape == (len(dataset.species),)
+        assert self.datasets[0][100][1].shape == (len(dataset.species),)
+        assert self.datasets[1][0][1].shape == (len(dataset.species),)
+        del two_items_per_dataset
+        # --------------------------------------------------------------------------
+        # Test the type of the elements in the list and equality after indexing
+        two_labels = [ self.datasets[0][[0, 10]][1], 
+                       self.datasets[2][[0, 10]][1],
+                       self.datasets[1][[0, 10]][1]]
+        assert type(two_labels[0][0]) == type(two_labels[0][1])
+        assert type(two_labels[0][0]) == type(self.datasets[0][0][1])
+        assert type(two_labels[0][0]) == type(self.datasets[1][0][1])
+        assert equal(two_labels[0][0], self.datasets[0][0][1])
+        assert equal(two_labels[0][1], self.datasets[0][10][1])
+        assert equal(two_labels[1][0], self.datasets[2][0][1])
+        assert equal(two_labels[1][1], self.datasets[2][10][1])
+        assert equal(two_labels[2][0], self.datasets[1][0][1])
+        assert equal(two_labels[2][1], self.datasets[1][10][1])
+        assert len(two_labels[0]) == 2
+        assert len(two_labels[1]) == 2
+        assert len(two_labels[2]) == 2
+        
+
+
+
 
 
 if __name__ == "__main__":
