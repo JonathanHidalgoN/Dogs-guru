@@ -15,7 +15,7 @@ from google_images_download import google_images_download
 from shutil import rmtree
 from typing import Union, Generator, List, Dict, Tuple
 from warnings import warn
-
+from torch import stack as torch_stack
 
 class DogsDataSet(Dataset):
     # TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
@@ -193,9 +193,12 @@ class DogsDataSet(Dataset):
                 return (image, self._get_label_from_image_path(image_path))
         elif isinstance(index, list):
             images = []
+            labels = []
             for idx in index:
-                images.append(self[idx])
-            return images
+                image , label = self[idx]
+                images.append(image)
+                labels.append(label)
+            return (torch_stack(images), torch_stack(labels))
         else:
             raise TypeError("Index must be an integer or a list of integers")
 
@@ -260,12 +263,16 @@ class DogsDataSet(Dataset):
 
 if __name__ == "__main__":
     from utils import generate_indexes, count_total_images
+    from images_pipeline.Transformations import ToTensor, Rescale
+    from torchvision.transforms import Compose
 
+    transform = Compose([Rescale((256,256)), ToTensor()])
     path = "images/Images"
     total_images = count_total_images(path)
     proportion = [0.8, 0.1, 0.1]
     index_generator = generate_indexes(total_images, proportion)
-    train_dataset = DogsDataSet(path, index_generator)
-    labels = train_dataset.get_labels()
-    print(labels)
+    train_dataset = DogsDataSet(path, index_generator, transform)
+    check = train_dataset[[1,2]]
+    tensors = check[0]
+    labels = check[1]
     pass # breakpoint
