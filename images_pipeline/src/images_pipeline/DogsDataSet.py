@@ -224,9 +224,12 @@ class DogsDataSet(Dataset):
             A string representing the name of the class.
         Logic :
             The full path is of the form "images/Images/n02085620-Chihuahua/n02085620_10074.jpg"
+            trash_index is the index of the first "/" after "images/Images" so new full_label is "n02085620-Chihuahua/n02085620_10074.jpg"
             The name of the class is "Chihuahua"
             Looking for the first "-" and the first "/" after it gives the name of the class
         """
+        trash_index = full_label.index(self.path) + 1
+        full_label = full_label[trash_index:]
         start_index = full_label.index("-") + 1
         end_index = full_label.index("/", start_index)
         return full_label[start_index:end_index]
