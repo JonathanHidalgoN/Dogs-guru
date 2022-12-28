@@ -13,9 +13,9 @@ from torch import zeros as torch_zeros
 from torch import Tensor as torch_tensor
 from google_images_download import google_images_download
 from shutil import rmtree
-from typing import Union, Generator, List
+from typing import Union, Generator, List, Dict, Tuple
 from warnings import warn
-
+from torch import stack as torch_stack
 
 class DogsDataSet(Dataset):
     # TO DO: maybe add private attributes for paths of subfolders, because I use them a lot
@@ -40,6 +40,7 @@ class DogsDataSet(Dataset):
         self.indexes = next(generator)
         self._full_paths = self._get_full_paths()
         self.transform = transform
+        self.species_to_index = self._set_map()
 
     def _get_full_paths(self) -> List[str]:
         """
@@ -172,14 +173,14 @@ class DogsDataSet(Dataset):
         # len(self) calls the __len__ method
         return f"Dataset with {len(self)} classes"
 
-    def __getitem__(self, index: Union[int, List[str]]) -> torch_tensor:
+    def __getitem__(self, index: Union[int, List[str]]) -> Tuple[torch_tensor, torch_tensor]:
         # This is not always a tensor, it can be a list of tensors or an image
         """
         Returns the class at the given index.
         Args:
             index: An integer representing the index of the class to return.
         Returns:
-            A string representing the class at the given index.
+            A tuple containing the image and the label of the image.
         """
         if isinstance(index, int):
             if index >= len(self):
@@ -189,14 +190,30 @@ class DogsDataSet(Dataset):
                 image = read_image(image_path)
                 if self.transform is not None:
                     image = self.transform(image)
-                return image
+                return (image, self._get_label_from_image_path(image_path))
         elif isinstance(index, list):
             images = []
+            labels = []
             for idx in index:
-                images.append(self[idx])
-            return images
+                image , label = self[idx]
+                images.append(image)
+                labels.append(label)
+            return (torch_stack(images), torch_stack(labels))
         else:
             raise TypeError("Index must be an integer or a list of integers")
+
+    def _get_label_from_image_path(self, image_path: str) -> torch_tensor:
+        """
+        Returns the label of the class from the full path to the image.
+        Args:
+            image_path: A string representing the full path to the image.
+        Returns:
+            A tensor representing the label of the class.
+        """
+        clean_label = self._extract_name(image_path)
+        full_zero_tensor = torch_zeros(len(self._species))
+        full_zero_tensor[self.species_to_index[clean_label]] = 1
+        return full_zero_tensor
 
     def _extract_name(self, full_label: str) -> str:
         """
@@ -214,11 +231,12 @@ class DogsDataSet(Dataset):
         end_index = full_label.index("/", start_index)
         return full_label[start_index:end_index]
 
-    def get_labels(self) -> torch_tensor:
+    def _set_map(self) -> Dict[str, int]:
         """
-        Returns the labels of the dataset.
+        Checks that the number of species in the dataset is the same as the number of species in the class
+        and creates a dictionary with the species as keys and the labels as values.
         Returns:
-            A tensor representing the labels of the dataset.
+            A dictionary with the species as keys and the labels as values.
         """
         names = [self._extract_name(path) for path in self._full_paths]
         different_species = len(set(names))
@@ -230,11 +248,8 @@ class DogsDataSet(Dataset):
             raise AssertionError(
                 f"Number of species in dataset ({different_species}) does not match number of species in class ({len(self._species)})"
             )
-        self.specie_to_int = {name: idx for idx, name in enumerate(self._species)}
-        full_zeros = torch_zeros(len(names), different_species)
-        for idx, name in enumerate(names):
-            full_zeros[idx, self.specie_to_int[name]] = 1
-        return full_zeros
+        return {name: idx for idx, name in enumerate(self._species)}
+
 
     def get_labels_as_string(self) -> List[str]:
         """
@@ -248,12 +263,16 @@ class DogsDataSet(Dataset):
 
 if __name__ == "__main__":
     from utils import generate_indexes, count_total_images
+    from images_pipeline.Transformations import ToTensor, Rescale
+    from torchvision.transforms import Compose
 
+    transform = Compose([Rescale((256,256)), ToTensor()])
     path = "images/Images"
     total_images = count_total_images(path)
     proportion = [0.8, 0.1, 0.1]
     index_generator = generate_indexes(total_images, proportion)
-    train_dataset = DogsDataSet(path, index_generator)
-    labels = train_dataset.get_labels()
-    print(labels)
+    train_dataset = DogsDataSet(path, index_generator, transform)
+    check = train_dataset[[1,2]]
+    tensors = check[0]
+    labels = check[1]
     pass # breakpoint

@@ -67,16 +67,6 @@ class TestDogsDataSet:
         assert lens[1] == int(self.total_images * self.proportion[1])
         assert lens[2] == int(self.total_images * self.proportion[2])
 
-
-    def test_get_labels_as_string(self):
-        """
-        Tests the get_labels method.
-        """
-        labels = [dataset.get_labels_as_string() for dataset in self.datasets]
-        assert len(labels[0]) == int(self.total_images * self.proportion[0])
-        assert len(labels[1]) == int(self.total_images * self.proportion[1])
-        assert len(labels[2]) == int(self.total_images * self.proportion[2])
-
     def test_getitem(self):
         """
         Tests the __getitem__ method.
@@ -87,14 +77,14 @@ class TestDogsDataSet:
             transforms.Compose(
                 [Rescale((256, 256)), RandomCrop((224, 224)), ToTensor()]
             ),
-            None,
+            transforms.Compose([Rescale((256, 256)), ToTensor()])
         ]
         for idx, dataset in enumerate(self.datasets):
             dataset.transform = transformations[idx]
-        assert self.datasets[0][0].shape == (256, 256, 3)
-        assert self.datasets[0][100].shape == (256, 256, 3)
-        assert self.datasets[1][0].shape == (224, 224, 3)
-        assert self.datasets[1][78].shape == (224, 224, 3)
+        assert self.datasets[0][0][0].shape == (3, 256, 256)
+        assert self.datasets[0][100][0].shape == (3, 256, 256)
+        assert self.datasets[1][0][0].shape == (3, 224, 224)
+        assert self.datasets[1][78][0].shape == (3, 224, 224)
         # -------------------------------------------------------------------------
         # Test the index error
         with pytest.raises(IndexError):
@@ -104,40 +94,57 @@ class TestDogsDataSet:
 
         # --------------------------------------------------------------------------
         # Test len of indexing with a list
-        assert len(self.datasets[0][[1, 2]]) == 2
-        assert len(self.datasets[1][[1, 2, 3, 4, 5]]) == 5
-        assert len(self.datasets[2][[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]]) == 10
+        assert len(self.datasets[0][[1, 2]][0]) == 2
+        assert len(self.datasets[1][[1, 2, 3, 4, 5]][0]) == 5
+        assert len(self.datasets[2][[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]][0]) == 10
         # --------------------------------------------------------------------------
         # Test the type of the elements in the list and equality after indexing
         two_items_per_dataset = [
-            self.datasets[0][[0, 10]],
-            self.datasets[1][[0, 10]],
-            self.datasets[2][[0, 10]],
+            self.datasets[0][[0, 10]][0] ,
+            self.datasets[1][[0, 10]][0],
+            self.datasets[2][[0, 10]][0],
         ]
-        assert type(two_items_per_dataset[0][0]) == type(two_items_per_dataset[0][1])
-        assert type(two_items_per_dataset[0][0]) == type(self.datasets[0][0])
-        assert type(two_items_per_dataset[0][0]) == type(self.datasets[1][0])
-        assert type(two_items_per_dataset[0][0]) == type(self.datasets[2][0])
+        assert type(two_items_per_dataset[0][0]) == type(two_items_per_dataset[0][1][0])
+        assert type(two_items_per_dataset[0][0]) == type(self.datasets[0][0][0])
+        assert type(two_items_per_dataset[0][0]) == type(self.datasets[1][0][0])
+        assert type(two_items_per_dataset[0][0]) == type(self.datasets[2][0][0])
         # Here we test the equality of the elements in the list and the elements in the dataset
         # Not testing with the second dataset because it has a random crop transformation,
         # so the elements in the list will be different from the elements in the dataset
-        assert equal(self.datasets[0][0], two_items_per_dataset[0][0])
-        assert equal(self.datasets[0][10], two_items_per_dataset[0][1])
-        assert equal(self.datasets[2][0], two_items_per_dataset[2][0])
-        assert equal(self.datasets[2][10], two_items_per_dataset[2][1])
+        assert equal(self.datasets[0][0][0], two_items_per_dataset[0][0])
+        assert equal(self.datasets[0][10][0], two_items_per_dataset[0][1])
+
+        assert equal(self.datasets[2][0][0], two_items_per_dataset[2][0])
+        assert equal(self.datasets[2][10][0], two_items_per_dataset[2][1])
         assert len(two_items_per_dataset[0]) == 2
         assert len(two_items_per_dataset[1]) == 2
         assert len(two_items_per_dataset[2]) == 2
         # --------------------------------------------------------------------------
+        # Test labels
+        # Since labels are one hot encoded, the shape of the labels should be equal to the number of species
+        assert self.datasets[0][0][1].shape == (len(dataset.species),)
+        assert self.datasets[0][100][1].shape == (len(dataset.species),)
+        assert self.datasets[1][0][1].shape == (len(dataset.species),)
+        del two_items_per_dataset
+        # --------------------------------------------------------------------------
+        # Test the type of the elements in the list and equality after indexing
+        two_labels = [ self.datasets[0][[0, 10]][1], 
+                       self.datasets[2][[0, 10]][1],
+                       self.datasets[1][[0, 10]][1]]
+        assert type(two_labels[0][0]) == type(two_labels[0][1])
+        assert type(two_labels[0][0]) == type(self.datasets[0][0][1])
+        assert type(two_labels[0][0]) == type(self.datasets[1][0][1])
+        assert equal(two_labels[0][0], self.datasets[0][0][1])
+        assert equal(two_labels[0][1], self.datasets[0][10][1])
+        assert equal(two_labels[1][0], self.datasets[2][0][1])
+        assert equal(two_labels[1][1], self.datasets[2][10][1])
+        assert equal(two_labels[2][0], self.datasets[1][0][1])
+        assert equal(two_labels[2][1], self.datasets[1][10][1])
+        assert len(two_labels[0]) == 2
+        assert len(two_labels[1]) == 2
+        assert len(two_labels[2]) == 2
 
-    def test_get_labels(self):
-        """
-        Tests the get_labels method.
-        """
-        labels = [dataset.get_labels() for dataset in self.datasets]
-        for label,dataset in zip(labels,self.datasets):
-            # Check if the labels are in the correct range
-            assert label.shape == (len(label), len(dataset.species))
+
 
 if __name__ == "__main__":
     import subprocess

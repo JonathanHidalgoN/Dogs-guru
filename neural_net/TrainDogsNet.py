@@ -104,8 +104,7 @@ class TrainDogsNet:
                     dataloader = train_dataloader
                 else:
                     dataloader = val_dataloader
-                for inputs in dataloader:
-                    labels = dataloader.dataset.get_labels()
+                for inputs,labels in dataloader:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
 
@@ -115,7 +114,7 @@ class TrainDogsNet:
                     # forward
                     # track history if only in train
                     with torch.set_grad_enabled(phase == "train"):
-                        outputs = self.model(inputs)
+                        outputs = self.model(inputs.float())
                         _, preds = torch.max(outputs, 1)
                         loss = self.criterion(outputs, labels)
 
