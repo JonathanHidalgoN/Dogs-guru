@@ -13,7 +13,7 @@ from torch import zeros as torch_zeros
 from torch import Tensor as torch_tensor
 from google_images_download import google_images_download
 from shutil import rmtree
-from typing import Union, Generator, List, Dict
+from typing import Union, Generator, List, Dict, Tuple
 from warnings import warn
 
 
@@ -173,14 +173,14 @@ class DogsDataSet(Dataset):
         # len(self) calls the __len__ method
         return f"Dataset with {len(self)} classes"
 
-    def __getitem__(self, index: Union[int, List[str]]) -> torch_tensor:
+    def __getitem__(self, index: Union[int, List[str]]) -> Tuple[torch_tensor, torch_tensor]:
         # This is not always a tensor, it can be a list of tensors or an image
         """
         Returns the class at the given index.
         Args:
             index: An integer representing the index of the class to return.
         Returns:
-            A string representing the class at the given index.
+            A tuple containing the image and the label of the image.
         """
         if isinstance(index, int):
             if index >= len(self):
@@ -190,7 +190,7 @@ class DogsDataSet(Dataset):
                 image = read_image(image_path)
                 if self.transform is not None:
                     image = self.transform(image)
-                return image
+                return (image, self._get_label_from_image_path(image_path))
         elif isinstance(index, list):
             images = []
             for idx in index:
