@@ -143,9 +143,6 @@ class TestDogsDataSet:
         assert len(two_labels[0]) == 2
         assert len(two_labels[1]) == 2
         assert len(two_labels[2]) == 2
-        
-
-
 
 
 
