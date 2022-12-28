@@ -104,8 +104,7 @@ class TrainDogsNet:
                     dataloader = train_dataloader
                 else:
                     dataloader = val_dataloader
-                for inputs in dataloader:
-                    labels = dataloader.dataset.get_labels()
+                for inputs,labels in dataloader:
                     inputs = inputs.to(device)
                     labels = labels.to(device)
 
@@ -118,7 +117,7 @@ class TrainDogsNet:
                         outputs = self.model(inputs.float())
                         _, preds = torch.max(outputs, 1)
                         loss = self.criterion(outputs, labels)
-    
+
                         # backward + optimize only if in training phase
                         if phase == "train":
                             loss.backward()
