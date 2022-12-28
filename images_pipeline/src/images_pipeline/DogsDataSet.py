@@ -13,7 +13,7 @@ from torch import zeros as torch_zeros
 from torch import Tensor as torch_tensor
 from google_images_download import google_images_download
 from shutil import rmtree
-from typing import Union, Generator, List
+from typing import Union, Generator, List, Dict
 from warnings import warn
 
 
@@ -40,6 +40,7 @@ class DogsDataSet(Dataset):
         self.indexes = next(generator)
         self._full_paths = self._get_full_paths()
         self.transform = transform
+        self.species_to_index = self._set_map()
 
     def _get_full_paths(self) -> List[str]:
         """
@@ -198,6 +199,19 @@ class DogsDataSet(Dataset):
         else:
             raise TypeError("Index must be an integer or a list of integers")
 
+    def _get_label_from_image_path(self, image_path: str) -> torch_tensor:
+        """
+        Returns the label of the class from the full path to the image.
+        Args:
+            image_path: A string representing the full path to the image.
+        Returns:
+            A tensor representing the label of the class.
+        """
+        clean_label = self._extract_name(image_path)
+        full_zero_tensor = torch_zeros(len(self._species))
+        full_zero_tensor[self.species_to_index[clean_label]] = 1
+        return full_zero_tensor
+
     def _extract_name(self, full_label: str) -> str:
         """
         Extracts the name of the class from the full path.
@@ -214,11 +228,12 @@ class DogsDataSet(Dataset):
         end_index = full_label.index("/", start_index)
         return full_label[start_index:end_index]
 
-    def get_labels(self) -> torch_tensor:
+    def _set_map(self) -> Dict[str, int]:
         """
-        Returns the labels of the dataset.
+        Checks that the number of species in the dataset is the same as the number of species in the class
+        and creates a dictionary with the species as keys and the labels as values.
         Returns:
-            A tensor representing the labels of the dataset.
+            A dictionary with the species as keys and the labels as values.
         """
         names = [self._extract_name(path) for path in self._full_paths]
         different_species = len(set(names))
@@ -230,11 +245,8 @@ class DogsDataSet(Dataset):
             raise AssertionError(
                 f"Number of species in dataset ({different_species}) does not match number of species in class ({len(self._species)})"
             )
-        self.specie_to_int = {name: idx for idx, name in enumerate(self._species)}
-        full_zeros = torch_zeros(len(names), different_species)
-        for idx, name in enumerate(names):
-            full_zeros[idx, self.specie_to_int[name]] = 1
-        return full_zeros
+        return {name: idx for idx, name in enumerate(self._species)}
+
 
     def get_labels_as_string(self) -> List[str]:
         """
