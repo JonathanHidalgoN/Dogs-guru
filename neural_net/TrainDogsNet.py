@@ -115,10 +115,10 @@ class TrainDogsNet:
                     # forward
                     # track history if only in train
                     with torch.set_grad_enabled(phase == "train"):
-                        outputs = self.model(inputs)
+                        outputs = self.model(inputs.float())
                         _, preds = torch.max(outputs, 1)
                         loss = self.criterion(outputs, labels)
-
+    
                         # backward + optimize only if in training phase
                         if phase == "train":
                             loss.backward()
