@@ -116,6 +116,8 @@ class TrainDogsNet:
                     with torch.set_grad_enabled(phase == "train"):
                         outputs = self.model(inputs.float())
                         _, preds = torch.max(outputs, 1)
+                        num_classes = labels.shape[1]
+                        preds = torch.nn.functional.one_hot(preds, num_classes)
                         loss = self.criterion(outputs, labels)
 
                         # backward + optimize only if in training phase
