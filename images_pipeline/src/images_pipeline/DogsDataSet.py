@@ -228,7 +228,7 @@ class DogsDataSet(Dataset):
             The name of the class is "Chihuahua"
             Looking for the first "-" and the first "/" after it gives the name of the class
         """
-        trash_index = full_label.index(self.path) + 1
+        trash_index = len(self.path) + 1
         full_label = full_label[trash_index:]
         start_index = full_label.index("-") + 1
         end_index = full_label.index("/", start_index)
